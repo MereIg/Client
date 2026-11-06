@@ -24,6 +24,7 @@ boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/show_image=false
 boot_splash/image="uid://baivqqkfll133"
 config/icon="uid://bwygmhmegsm4f"
+config/quit_on_go_back=false
 
 [audio]
 
@@ -52,6 +53,7 @@ file_logging/enable_file_logging=true
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/handheld/orientation=4
 
 [dotnet]
 
@@ -74,6 +76,7 @@ timers/tooltip_delay_sec=0.1
 [input_devices]
 
 pointing/android/enable_long_press_as_right_click=true
+buffering/agile_event_flushing=true
 
 [internationalization]
 

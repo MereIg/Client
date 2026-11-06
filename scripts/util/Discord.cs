@@ -7,6 +7,10 @@ public class Discord
 
     static Discord()
     {
+        // Discord Rich Presence only exists on desktop
+        if (Mobile.IsAndroid)
+            return;
+
         // TODO: Add logging here
         Client = new DiscordRpcClient(appId) { };
 

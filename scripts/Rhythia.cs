@@ -34,6 +34,8 @@ public partial class Rhythia : Node
 
         GetTree().AutoAcceptQuit = false;
 
+        Mobile.Initialize(this);
+
         // Settings
 
         if (!File.Exists($"{Constants.USER_FOLDER}/profiles/default.json"))
@@ -183,6 +185,8 @@ public partial class Rhythia : Node
             );
 
         loaded = true;
+
+        Mobile.ImportFromDownloads();
     }
 
     public static void RegisterCameraModes()
@@ -232,7 +236,7 @@ public partial class Rhythia : Node
             Stats.Save();
         }
 
-        Discord.Client.Dispose();
+        Discord.Client?.Dispose();
 
         var quitTween = Instance.CreateTween();
         quitTween
@@ -257,6 +261,11 @@ public partial class Rhythia : Node
 
             Quit();
         }
+        else if (what == NotificationWMGoBackRequest)
+        {
+            // Android back gesture/button acts like Escape (pause in game, back in menus)
+            Mobile.TapKey(Key.Escape);
+        }
         else if (what == NotificationApplicationFocusOut)
         {
             Engine.MaxFps = 30;
@@ -265,6 +274,10 @@ public partial class Rhythia : Node
         {
             var settings = SettingsManager.Instance.Settings;
             Engine.MaxFps = settings.LockFPS ? settings.FPS : 0;
+
+            // Picks up maps downloaded in the browser (and runs after granting file access)
+            if (loaded)
+                Mobile.ImportFromDownloads();
         }
     }
 }

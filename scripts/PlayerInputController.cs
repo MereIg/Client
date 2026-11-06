@@ -26,6 +26,9 @@ public partial class PlayerInputController : Node
     public event Action<bool> OnLeftMouseButton;
     public bool IsEnabled { get; private set; } = true;
 
+    /// <summary>Device id Godot gives mouse events it generates from touches (InputEvent.DeviceIdEmulation).</summary>
+    private const int emulated_device = -1;
+
     public override void _Input(InputEvent @event)
     {
         if (!IsEnabled)
@@ -38,9 +41,24 @@ public partial class PlayerInputController : Node
     {
         switch (@event)
         {
+            // Touchscreens: read the finger directly instead of Godot's emulated mouse,
+            // so aiming uses the raw, full-resolution drag with no extra smoothing or lag
+            case InputEventMouseMotion { Device: emulated_device }:
+            case InputEventMouseButton { Device: emulated_device }:
+                break;
+            case InputEventScreenDrag { Index: 0 } drag:
+                handleTouchDrag(drag);
+                break;
             case InputEventMouseMotion:
             case InputEventMouseButton { ButtonIndex: MouseButton.Left }:
                 handleMouseInput(@event);
+                break;
+            // Touchscreens: tapping with a second finger acts like Space (skip intro / pause)
+            case InputEventScreenTouch { Index: >= 1 } touch:
+                if (touch.Pressed)
+                    OnPauseOrSkipPressed?.Invoke();
+                else
+                    OnPauseOrSkipReleased?.Invoke();
                 break;
             case InputEventKey { PhysicalKeycode: Key.Escape }:
             case InputEventKey { PhysicalKeycode: Key.F2 }:
@@ -66,6 +84,15 @@ public partial class PlayerInputController : Node
 
             OnLeftMouseButton?.Invoke(mouseButton.Pressed);
         }
+    }
+
+    private void handleTouchDrag(InputEventScreenDrag drag)
+    {
+        // Events arrive in UI-scaled coordinates; convert back to real screen pixels
+        // so sensitivity and absolute mode behave the same as with a mouse
+        float scale = GetTree().Root.ContentScaleFactor;
+
+        OnMouseMove?.Invoke(drag.Relative * scale, drag.Position * scale);
     }
 
     private void handleKeyboardInput(InputEvent @event)

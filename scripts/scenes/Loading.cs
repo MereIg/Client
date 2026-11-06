@@ -38,7 +38,9 @@ public partial class Loading : BaseScene
         bool updateFound = false;
         try
         {
-            updateFound = await Releases.CheckForUpdatesAsync();
+            // The auto-updater downloads desktop builds, so skip it on Android
+            if (!Mobile.IsAndroid)
+                updateFound = await Releases.CheckForUpdatesAsync();
         }
         catch (Exception ex)
         {
